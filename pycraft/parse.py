@@ -21,7 +21,9 @@ def getspaces(line):
     
   return n
 
+
 def parse(text):
+
   lines = (text.replace("import pycraft", "").strip() + "\n").split("\n")
   output = []
 
@@ -46,7 +48,7 @@ def parse(text):
             output.append(indents[indents.index(spaces) - 1] * " " + "{")
           else:
             output.append("{")
-        elif spaces < lastindent: # Unindent
+        elif spaces < lastindent: # Unindent 
           try:
             unindents = len(indents) - indents.index(spaces) - 1
             for n in range(unindents):
@@ -59,8 +61,44 @@ def parse(text):
             return ["error", linenum + 1, line, len(line), "IndentationError: unindent does not match any outer indentation level"]
       
       if prettyprint:
-        output.append(line)
+        output.append(line) # No compiling here yet
       else:
-        output.append(line.strip())
+        try:
+          output.append(compilestatement(line.strip()))
+        except:
+          output.append(line.strip())
+
+  return ("\n".join(output)).strip()
+
+def isValidVariable(name):
+  if name[0].isalpha():# or name[0] == "_":
+    for letter in name:
+      if not (letter.isalnum() or letter == "_"):
+        return False
+      return True
+  else:
+    return False
+
+def compilestatement(text):
+
+  lines = text.strip().split("\n")
+  output = []
+
+  for linenum in range(len(lines)):
+    line = lines[linenum]
+
+    if line.startswith("#") or line == "": # Just to make it work with raw unparsed code for testing
+      continue
+
+    words = line.split(" ")
+
+    if words[1] == "=": # Assignment
+      if isValidVariable(words[0]):
+        output.append("/data modify storage pycraft-variables " + words[0] + " set value " + " ".join(words[2:]))
+      else:
+        raise SyntaxError("Bad variable name")
+
+    else:
+      raise SyntaxError("invalid syntax")
 
   return ("\n".join(output)).strip()

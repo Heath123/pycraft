@@ -21,6 +21,8 @@ __code = inspect.getsource(__main__)
 
 __result = parse.parse(__code)
 
+#__result = parse.compilestatement(__code.strip().split("\n")[::-1][0]) # We just support one statement for now.
+
 if str(type(__result)) == "<class 'list'>":
   if __result[0] == "error":
     error(__result)
